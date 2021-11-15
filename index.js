@@ -23,151 +23,203 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
 });
 
-{/* <password>@cluster0.6ijjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true }); */}
-
-
-//DB CONNECTION
+// Database One
 async function run() {
   try {
     await client.connect();
-    const database = client.db("assignment-12"); //shoesDB
-    const user_collection = database.collection("users");
-    const product_collection = database.collection("products");
-    const order_collection = database.collection("orders");
-    const review_collection = database.collection("review");
 
-    //#user add: post api
-    app.post("/users", async (req, res) => {
-      const result = await user_collection.insertOne(req.body);
-      res.json(result);
-    });
+    // user data
+    const userDatabase = client.db("userDB");
+    const userdata = userDatabase.collection("users");
 
-    //#user add: post api
-    app.get("/admin/:email", async (req, res) => {
-      const email = req.params.email;
-      const result = await user_collection.findOne({ email: email });
-      res.json(result);
-    });
+    // Make Admin data
+    const adminDatabase = client.db("userDB");
+    const admindata = adminDatabase.collection("admin");
 
-    //# add a new admin: post api
-    app.put("/addAdmin", async (req, res) => {
-      const email = req.body.email;
-      const result = await user_collection.updateOne(
-        { email },
-        {
-          $set: { role: "admin" },
-        }
-      );
-      res.json(result);
-    });
+    // Product data
+    const productDatabase = client.db("insertDB");
+    const product = productDatabase.collection("product");
 
-    //#all products load: get api
-    app.get("/products", async (req, res) => {
-      const result = await product_collection.find({}).toArray();
-      res.json(result);
-    });
 
-    //#single data load: get api
-    app.get("/placeorder/:id", async (req, res) => {
-      const result = await product_collection.findOne({
-        _id: ObjectId(req.params.id),
-      });
-      res.json(result);
-    });
+    // Order Data
+    const Orderdatabase = client.db("orderDB");
+    const order = Orderdatabase.collection("order");
 
-    //# place order: post api
-    app.post("/placeorder", async (req, res) => {
-      const order = req.body;
-      order.status = "Pending";
-      delete order._id;
-      const result = await order_collection.insertOne(order);
-      res.json(result);
-    });
+// Review Data
+    const Reviewdatabase = client.db("ReviewDB");
+    const review = Reviewdatabase.collection("review");
 
-    //# load all orders: get api
-    app.get("/orders", async (req, res) => {
-      const email = req.query.email;
-      let result;
-      if (email) {
-        result = await order_collection.find({ email }).toArray();
-      } else {
-        result = await order_collection.find({}).toArray();
-      }
-      res.json(result);
-    });
+// Purchase data
+    const Purchasedatabase = client.db("PurchaseDB");
+    const purchase = Purchasedatabase.collection("purchase");
 
-    //# Change status: put api
-    app.put("/updateOrderStatus", async (req, res) => {
-      const id = req.body.id;
-      const status = req.body.status;
-      const result = await order_collection.updateOne(
-        { _id: ObjectId(id) },
-        {
-          $set: { status: status },
-        }
-      );
-      res.json(result.modifiedCount);
-    });
 
-    //# update a product: put api
-    app.put("/updateProduct", async (req, res) => {
-      const id = req.query.id;
-      const product = req.body;
-      const result = await product_collection.updateOne(
-        { _id: ObjectId(id) },
-        {
-          $set: product,
-        }
-      );
-      res.json(result);
-    });
 
-    //# delete specific order: delete api
-    app.delete("/placeorder/:id", async (req, res) => {
-      const result = await order_collection.deleteOne({
-        _id: ObjectId(req.params.id),
-      });
-      res.json(result);
-    });
 
-    //# add a new product: post api
-    app.post("/addProduct", async (req, res) => {
-      const result = await product_collection.insertOne(req.body);
-      res.json(result);
-    });
+    // Post API product
+    app.post('/product', async(req,res)=>{
+      const newUser= req.body;
 
-    //# add a review: post api
-    app.post("/addReview", async (req, res) => {
-      const result = await review_collection.insertOne(req.body);
-      res.json(result);
-    });
+      const result=await product.insertOne(newUser)
+      console.log('start', req.body);
+      console.log('Add user-', result);
+      res.send('Enter the point')
+    })
 
-    //# load all review: get api
-    app.get("/reviews", async (req, res) => {
-      const result = await review_collection.find({}).toArray();
-      res.json(result);
-    });
+    // Post API Admin
+    app.post('/admin', async(req,res)=>{
+      const newUser= req.body;
 
-    //# delete a product: delete api
-    app.delete("/deleteProduct/:id", async (req, res) => {
-      const result = await product_collection.deleteOne({
-        _id: ObjectId(req.params.id),
-      });
-      res.json(result);
-    });
+      const result=await admindata.insertOne(newUser)
+      console.log('start', req.body);
+      console.log('Add user-', result);
+      res.send('Enter the point')
+    })
 
-    //#single order load: get api
-    app.get("/updateOne/:id", async (req, res) => {
-      const result = await product_collection.findOne({
-        _id: ObjectId(req.params.id),
-      });
-      res.json(result);
-    });
-  } finally {
+
+
+    // Post API Order
+    app.post('/order', async(req,res)=>{
+      const newUser= req.body;
+
+      const result=await order.insertOne(newUser)
+      console.log('start', req.body);
+      console.log('Add user-', result);
+      res.send('Enter the point')
+    })
+
+    app.get('/order',async (req, res)=>{
+      const email= req.query.email;
+      const query = {email:email}
+      console.log(query);
+      const cursor = order.find(query)
+      const orderData = await cursor.toArray();
+      res.json(orderData)
+    })
+
+
+    // Post API review
+    app.post('/review', async(req,res)=>{
+      const newUser= req.body;
+
+      const result=await review.insertOne(newUser)
+      console.log('start', req.body);
+      console.log('Add user-', result);
+      res.send('Enter the point')
+    })
+
+
+    // Post API purchase
+    app.post('/purchase', async(req,res)=>{
+      const newUser= req.body;
+
+      const result=await purchase.insertOne(newUser)
+      console.log('start', req.body);
+      console.log('Add user-', result);
+      res.send('Enter the point')
+    })
+
+   
+
+
+
+    // Find API user
+    app.get('/product',async(req,res)=>{
+      const cursor= product.find({});
+      const users=await cursor.toArray();
+      res.send(users);
+    })
+    // Find API admin
+    app.get('/admin',async(req,res)=>{
+      const cursor= admindata.find({});
+      const users=await cursor.toArray();
+      res.send(users);
+    })
+    // Find API order
+    app.get('/order',async(req,res)=>{
+      const cursor= order.find({});
+      const users=await cursor.toArray();
+      res.send(users);
+    })
+    // Find API review
+    app.get('/review',async(req,res)=>{
+      const cursor= review.find({});
+      const users=await cursor.toArray();
+      res.send(users);
+    })
+
+
+    // Find API purchase
+    app.get('/purchase',async(req,res)=>{
+      const cursor= purchase.find({});
+      const users=await cursor.toArray();
+      res.send(users);
+    })
+
+
+    
+    // Delete API product
+
+    app.delete('/product/:id',async(req,res)=>{
+      const id= req.params.id;
+      const query = {_id:ObjectId(id)};
+      const result = await product.deleteOne(query)
+      console.log('Deleteing id ', result);
+      res.json(result)
+    })
+
+
+    // Delete API Order
+
+    app.delete('/order/:id',async(req,res)=>{
+      const id= req.params.id;
+      const query = {_id:ObjectId(id)};
+      const result = await order.deleteOne(query)
+      console.log('Deleteing id ', result);
+      res.json(result)
+    })
+
+    // Delete API manage Order
+
+    app.delete('/purchase/:id',async(req,res)=>{
+      const id= req.params.id;
+      const query = {_id:ObjectId(id)};
+      const result = await purchase.deleteOne(query)
+      console.log('Deleteing id ', result);
+      res.json(result)
+    })
+
+
+
+    
+  }
+   finally {
     // await client.close();
   }
 }
 run().catch(console.dir);
 
-app.listen(port, () => console.log(`server is running on port ${port}`));
+
+//  ----------------------
+
+const hendel = (req, res) => {
+  res.send("Hello Node JS");
+};
+
+app.get("/", hendel);
+
+app.listen(port, () => {
+  console.log("listening to portv", port);
+});
+
+
+
+app.get("/user", (req, res) => {
+  res.send("Hello 1200 world 2");
+});
+
+app.get("/user/:id", (req, res) => {
+  const id = req.params.id;
+  const user = users[id];
+  res.send(user);
+});
